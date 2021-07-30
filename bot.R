@@ -50,7 +50,9 @@ for (i in 1:nrow(mentions)) {
 
         # Handle Bills in committee
         if (is.na(billdata$bill_state)) {
-          bill_status <- paste(result,billdata$Abstract, "\n","Current Status:","In Commitee","\n","Commitee:",billdata$FullText,"\n","Last Action:",billdata$LDOA)
+          bill_status <- paste(result,"-",billdata$Abstract, "\n","Current Status:","In Commitee","\n","Commitee:",billdata$FullText,"\n","Last Action:",billdata$LDOA)
+        } else {
+          bill_status <- paste(result,"-",billdata$Abstract, "\n","Current Status:",billdata$bill_state,"\n","Commitee:",billdata$FullText,"\n","Last Action:",billdata$LDOA)
         }
       # Post a tweet with the bill's current status as a reply
       post_tweet(status = bill_status, token = trentontracker_token, in_reply_to_status_id = mentions$status_id[i],auto_populate_reply_metadata = TRUE)
