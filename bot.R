@@ -32,6 +32,11 @@ trentontracker_token <- create_token(
 # Get twitter mentions
 mentions <- get_mentions(token = trentontracker_token, since_id = prev_mention_id)
 
+# Stop if there are no new mentions
+if (nrow(mentions) < 1) {
+  stop('\r No new mentions to reply to.')
+}
+
 # Loop over mentions
 for (i in 1:nrow(mentions)) {
 
