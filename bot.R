@@ -4,7 +4,7 @@ library(dplyr)
 library(lubridate)
 
 # Read Twitter API credentials- LOCAL MACHINE ONLY
-#readRenviron(".env")
+# readRenviron(".env")
 
 # Get last mention ID from the previous run
 prev_mention_id <- readLines("last_mention.txt")
@@ -18,7 +18,7 @@ acronyms <- read.csv("acronyms.csv") %>%
   rename("bill_state" = FullText)
 
 # Log to console
-cat(paste("Legislative data retrieved.","TrentonTracker data current as of",status_date,"\n"))
+cat(paste("Legislative data retrieved.", "TrentonTracker data current as of", status_date, "\n"))
 
 # Create a token for authenticating to Twitter
 trentontracker_token <- create_token(
@@ -43,28 +43,31 @@ for (i in 1:nrow(mentions)) {
 
     # If a match is found in the database, grab that bill's data
     if (result %in% data$slug) {
-
       billdata <- data %>%
         filter(slug == result) %>%
         left_join(acronyms, by = c("CurrentStatus" = "Acronym"))
 
-        # Handle Bills in committee
-        if (is.na(billdata$bill_state)) {
-          bill_status <- paste(result,"-",billdata$Abstract, "\n","Current Status:","In Commitee","\n","Commitee:",billdata$FullText,"\n","Last Action:",billdata$LDOA)
-        } else {
-          bill_status <- paste(result,"-",billdata$Abstract, "\n","Current Status:",billdata$bill_state,"\n","Commitee:",billdata$FullText,"\n","Last Action:",billdata$LDOA)
-        }
+      # Handle Bills in committee
+      if (is.na(billdata$bill_state)) {
+        bill_status <- paste(result, "-", billdata$Abstract, "\n", "Current Status:", "In Commitee", "\n", "Commitee:", billdata$FullText, "\n", "Last Action:", billdata$LDOA)
+      } else {
+        bill_status <- paste(result, "-", billdata$Abstract, "\n", "Current Status:", billdata$bill_state, "\n", "Commitee:", billdata$FullText, "\n", "Last Action:", billdata$LDOA)
+      }
       # Post a tweet with the bill's current status as a reply
-      post_tweet(status = bill_status, token = trentontracker_token, in_reply_to_status_id = mentions$status_id[i],auto_populate_reply_metadata = TRUE)
+      post_tweet(status = bill_status, token = trentontracker_token, in_reply_to_status_id = mentions$status_id[i], auto_populate_reply_metadata = TRUE)
       cat(paste("Replied to Tweet", mentions$status_id[i], "at", Sys.time()))
     }
   }
 }
 
+# Save the last mention ID so the bot can resume later.
+if(nrow(mentions) > 0) {
+
 # Get the last ID of the mentions to only work with tweets newer than this one on the next run
 last_mention_id <- mentions$status_id[i]
 
 # Write out the ID to a text file
-writeLines(last_mention_id,file("last_mention.txt"))
-
-
+writeLines(last_mention_id, file("last_mention.txt"))
+} else {
+  cat("No new mentions to reply to.")
+}
