@@ -39,7 +39,7 @@ for (i in 1:nrow(mentions)) {
   for (j in 1:length(strsplit(mentions$text[i], " ")[[1]])) {
 
     # normalize input of bill name so it's always capitalized
-    result <- toupper(strsplit(mentions$text[1], " ")[[1]][j])
+    result <- toupper(strsplit(mentions$text[i], " ")[[1]][j])
 
     # If a match is found in the database, grab that bill's data
     if (result %in% data$slug) {
